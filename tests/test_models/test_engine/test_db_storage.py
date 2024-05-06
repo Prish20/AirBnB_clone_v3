@@ -18,6 +18,7 @@ import json
 import os
 import pep8
 import unittest
+from models import storage
 DBStorage = db_storage.DBStorage
 classes = {"Amenity": Amenity, "City": City, "Place": Place,
            "Review": Review, "State": State, "User": User}
@@ -29,6 +30,23 @@ class TestDBStorageDocs(unittest.TestCase):
     def setUpClass(cls):
         """Set up for the doc tests"""
         cls.dbs_f = inspect.getmembers(DBStorage, inspect.isfunction)
+        
+    def test_get(self):
+        """Test the get method"""
+        state = State(name="California")
+        storage.new(state)
+        storage.save()
+        self.assertEqual(storage.get(State, state.id), state)
+        self.assertIsNone(storage.get(State, "non_existent_id"))
+    
+    def test_count(self):
+        """Test the count method"""
+        initial_count = storage.count(State)
+        state = State(name="Texas")
+        storage.new(state)
+        storage.save()
+        self.assertEqual(storage.count(State), initial_count + 1)
+        self.assertEqual(storage.count(), initial_count + 1)
 
     def test_pep8_conformance_db_storage(self):
         """Test that models/engine/db_storage.py conforms to PEP8."""
