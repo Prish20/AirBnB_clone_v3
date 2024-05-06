@@ -1,5 +1,12 @@
 #!/usr/bin/python3
-# api/v1/app.py
+"""
+This module defines a Flask application to manage the AirBnB project API.
+
+It provides:
+- A Flask application instance
+- Blueprint registration for different routes
+- Teardown handling for closing the database session
+"""
 
 from flask import Flask
 from models import storage
