@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-# api/v1/views/__init__.py
+"""
+Blueprint for API
+"""
 
 from flask import Blueprint
 
