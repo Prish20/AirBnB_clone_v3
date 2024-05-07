@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 """
-Contains the TestUserDocs classes
+Contains the TestUserDocs classes and TestUser classes
 """
 
-from datetime import datetime
+import hashlib
 import inspect
 import models
 from models import user
@@ -42,7 +42,7 @@ class TestUserDocs(unittest.TestCase):
                         "user.py needs a docstring")
 
     def test_user_class_docstring(self):
-        """Test for the City class docstring"""
+        """Test for the User class docstring"""
         self.assertIsNot(User.__doc__, None,
                          "User class needs a docstring")
         self.assertTrue(len(User.__doc__) >= 1,
@@ -52,13 +52,10 @@ class TestUserDocs(unittest.TestCase):
         """Test for the presence of docstrings in User methods"""
         for func in self.user_f:
             self.assertIsNot(func[1].__doc__, None,
-                             "{:s} method needs a docstring".format(func[0]))
+                             "{:s} method needs a docstring". format(func[0]))
             self.assertTrue(len(func[1].__doc__) >= 1,
                             "{:s} method needs a docstring".format(func[0]))
 
-
-class TestUser(unittest.TestCase):
-    """Test the User class"""
     def test_is_subclass(self):
         """Test that User is a subclass of BaseModel"""
         user = User()
@@ -103,6 +100,19 @@ class TestUser(unittest.TestCase):
         else:
             self.assertEqual(user.last_name, "")
 
+    def test_password_is_hashed_on_creation(self):
+        """Test that User password is hashed on creation"""
+        user = User(password="mypassword")
+        expected_hash = hashlib.md5("mypassword".encode()).hexdigest()
+        self.assertEqual(user.password, expected_hash)
+
+    def test_password_is_hashed_on_update(self):
+        """Test that User password is hashed when updated"""
+        user = User()
+        user.password = "newpassword"
+        expected_hash = hashlib.md5("newpassword".encode()).hexdigest()
+        self.assertEqual(user.password, expected_hash)
+
     def test_to_dict_creates_dict(self):
         """test to_dict method creates a dictionary with proper attrs"""
         u = User()
@@ -110,9 +120,18 @@ class TestUser(unittest.TestCase):
         self.assertEqual(type(new_d), dict)
         self.assertFalse("_sa_instance_state" in new_d)
         for attr in u.__dict__:
-            if attr is not "_sa_instance_state":
+            if attr != "_sa_instance_state":
                 self.assertTrue(attr in new_d)
         self.assertTrue("__class__" in new_d)
+        self.assertNotIn("password", new_d)
+
+    def test_to_dict_with_include_password(self):
+        """Test to_dict with include_password parameter"""
+        u = User(password="mypassword")
+        new_d = u.to_dict(include_password=True)
+        self.assertIn("password", new_d)
+        self.assertEqual(new_d["password"],
+                         hashlib.md5("mypassword".encode()).hexdigest())
 
     def test_to_dict_values(self):
         """test that values in dict returned from to_dict are correct"""
@@ -130,3 +149,7 @@ class TestUser(unittest.TestCase):
         user = User()
         string = "[User] ({}) {}".format(user.id, user.__dict__)
         self.assertEqual(string, str(user))
+
+
+if __name__ == "__main__":
+    unittest.main()
