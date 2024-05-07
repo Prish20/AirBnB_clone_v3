@@ -30,7 +30,7 @@ class TestDBStorageDocs(unittest.TestCase):
     def setUpClass(cls):
         """Set up for the doc tests"""
         cls.dbs_f = inspect.getmembers(DBStorage, inspect.isfunction)
-    
+
     def test_get(self):
         """Test the get method"""
         state = State(name="California")
@@ -38,7 +38,7 @@ class TestDBStorageDocs(unittest.TestCase):
         storage.save()
         self.assertEqual(storage.get(State, state.id), state)
         self.assertIsNone(storage.get(State, "non_existent_id"))
-    
+
     def test_count(self):
         """Test the count method"""
         initial_count = storage.count(State)
