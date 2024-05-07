@@ -41,12 +41,21 @@ class TestDBStorageDocs(unittest.TestCase):
 
     def test_count(self):
         """Test the count method"""
-        initial_count = storage.count(State)
-        state = State(name="Texas")
-        storage.new(state)
+        initial_count = storage.count()
+        new_state = State(name="California")
+        storage.new(new_state)
         storage.save()
-        self.assertEqual(storage.count(State), initial_count + 1)
         self.assertEqual(storage.count(), initial_count + 1)
+        storage.delete(new_state)
+        storage.save()
+        self.assertEqual(storage.count(), initial_count)
+        new_user = User(email="email@example.com", password="pwd")
+        storage.new(new_user)
+        storage.save()
+        self.assertEqual(storage.count(User), 1)
+        storage.delete(new_user)
+        storage.save()
+        self.assertEqual(storage.count(User), 0)
 
     def test_pep8_conformance_db_storage(self):
         """Test that models/engine/db_storage.py conforms to PEP8."""
