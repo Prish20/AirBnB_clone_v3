@@ -88,16 +88,16 @@ def update_place(place_id):
 @app_views.route('/places_search', methods=['POST'], strict_slashes=False)
 def search_places():
     """Retrieves all Place objects based on the JSON body of the request"""
-    all_places = storage.all(Place).values()
     data = request.get_json()
 
     if data is None:
         return make_response(jsonify({"error": "Not a JSON"}), 400)
 
-    # If the JSON body is empty or all keys are empty, return all Place objects
-    if not data or all(not data.get(key) for key in
-                       ["states", "cities", "amenities"]):
-        return jsonify([place.to_dict() for place in all_places])
+    # Retrieve all places if the JSON body is empty or all keys are empty
+    if not data or all(not data.get(key)
+                       for key in ["states", "cities", "amenities"]):
+        return jsonify([place.to_dict() for
+                        place in storage.all(Place).values()])
 
     # Get list of places based on states and cities
     places = set()
@@ -115,12 +115,17 @@ def search_places():
                 for place in city.places:
                     places.add(place)
 
+    # If no states or cities were provided, get all places
+    if not places:
+        places = set(storage.all(Place).values())
+
     # Filter places based on amenities
-    if "amenities" in data:
-        amenities = set(storage.get(Amenity,
-                                    amenity_id) for amenity_id
-                        in data["amenities"])
+    if "amenities" in data and data["amenities"]:
+        amenities = set(data["amenities"])
         places = [place for place in places if
-                  amenities.issubset(set(place.amenities))]
+                  amenities.issubset(set(amenity.id
+                                         for amenity in place.amenities))]
+
+    return jsonify([place.to_dict() for place in places])
 
     return jsonify([place.to_dict() for place in places])
